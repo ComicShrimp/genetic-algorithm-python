@@ -1,9 +1,10 @@
 from collections import namedtuple
-from random import choices
-from typing import List
+from random import choices, randint
+from typing import Callable, List, Tuple
 
 genome = List[int]
 population = List[genome]
+FitnessFunc = Callable[[genome], int]
 
 Thing = namedtuple("Thing", ["name", "value", "weight"])
 
@@ -48,3 +49,24 @@ def fitness(genome: genome, things: List[Thing], weight_limit: int) -> int:
                 return 0
 
     return value
+
+
+def selection_pair(population: population, fitness_func: FitnessFunc) -> population:
+    return choices(
+        population=population,
+        weights=[fitness_func(genome) for genome in population],
+        k=2,
+    )
+
+
+def single_point_crossover(a: genome, b: genome) -> Tuple[genome, genome]:
+    if len(a) != len(b):
+        raise ValueError("Genomes a and b must be the same length")
+
+    length = len(a)
+
+    if length < 2:
+        return a, b
+
+    p = randint(1, length - 1)
+    return a[0:p] + b[p:], b[0:p] + a[p:]
