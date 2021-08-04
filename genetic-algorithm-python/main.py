@@ -1,5 +1,6 @@
+import random
 from collections import namedtuple
-from random import choices, randint
+from random import choices, randint, randrange
 from typing import Callable, List, Tuple
 
 genome = List[int]
@@ -70,3 +71,11 @@ def single_point_crossover(a: genome, b: genome) -> Tuple[genome, genome]:
 
     p = randint(1, length - 1)
     return a[0:p] + b[p:], b[0:p] + a[p:]
+
+
+def mutation(genome: genome, num: int = 1, probability: float = 0.5) -> genome:
+    for _ in range(num):
+        index = randrange(len(genome))
+        genome[index] = genome[index] if random() > probability else abs(genome[index] - 1)
+
+    return genome
