@@ -6,6 +6,10 @@ from typing import Callable, List, Tuple
 genome = List[int]
 population = List[genome]
 FitnessFunc = Callable[[genome], int]
+PopulateFunc = Callable[[], population]
+SelectionFunc = Callable[[population, FitnessFunc], Tuple[genome, genome]]
+CrossoverFunc = Callable[[genome, genome], Tuple[genome, genome]]
+MutationFunc = Callable[[genome], genome]
 
 Thing = namedtuple("Thing", ["name", "value", "weight"])
 
@@ -76,6 +80,45 @@ def single_point_crossover(a: genome, b: genome) -> Tuple[genome, genome]:
 def mutation(genome: genome, num: int = 1, probability: float = 0.5) -> genome:
     for _ in range(num):
         index = randrange(len(genome))
-        genome[index] = genome[index] if random() > probability else abs(genome[index] - 1)
+        genome[index] = (
+            genome[index] if random() > probability else abs(genome[index] - 1)
+        )
 
     return genome
+
+
+def run_evolution(
+    populate_func: PopulateFunc,
+    fitness_func: FitnessFunc,
+    fitness_limit: int,
+    selection_func: SelectionFunc = selection_pair,
+    crossover_func: CrossoverFunc = single_point_crossover,
+    mutation_func: MutationFunc = mutation,
+    generation_limit: int = 100,
+) -> Tuple[population, int]:
+    population = populate_func()
+
+    for i in range(generation_limit):
+        population = sorted(
+            population, key=lambda genome: fitness_func(genome), reverse=True
+        )
+
+        if fitness_func(population[0]) >= fitness_limit:
+            break
+
+        next_generation = population[0:2]
+
+        for j in range(int(len(population) / 2) - 1):
+            parents = selection_func(population, fitness_func)
+            offspring_a, offspring_b = crossover_func(parents[0], parents[1])
+            offspring_a = mutation_func(offspring_a)
+            offspring_b = mutation_func(offspring_b)
+            next_generation += [offspring_a, offspring_b]
+
+        population = next_generation
+
+    population = sorted(
+        population, key=lambda genome: fitness_func(genome), reverse=True
+    )
+
+    return population, i
