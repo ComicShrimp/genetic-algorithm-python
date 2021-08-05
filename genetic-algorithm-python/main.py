@@ -1,5 +1,7 @@
 import random
+import time
 from collections import namedtuple
+from functools import partial
 from random import choices, randint, randrange
 from typing import Callable, List, Tuple
 
@@ -81,7 +83,7 @@ def mutation(genome: genome, num: int = 1, probability: float = 0.5) -> genome:
     for _ in range(num):
         index = randrange(len(genome))
         genome[index] = (
-            genome[index] if random() > probability else abs(genome[index] - 1)
+            genome[index] if random.random() > probability else abs(genome[index] - 1)
         )
 
     return genome
@@ -122,3 +124,26 @@ def run_evolution(
     )
 
     return population, i
+
+
+def genome_to_things(genome: genome, things: List[Thing]) -> Thing:
+    result = []
+    for i, thing in enumerate(things):
+        if genome[i] == 1:
+            result += [thing.name]
+
+    return result
+
+
+start = time.time()
+population, generations = run_evolution(
+    populate_func=partial(generate_population, size=10, genome_length=len(things)),
+    fitness_func=partial(fitness, things=things, weight_limit=3000),
+    fitness_limit=740,
+    generation_limit=100,
+)
+end = time.time()
+
+print(f"number of generations: {generations}")
+print(f"time: {end - start}s")
+print(f"best solution: {genome_to_things(population[0], things)}")
