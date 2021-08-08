@@ -9,11 +9,20 @@ Genome = List[int]
 Population = List[Genome]
 
 products = [
-    Product("Laptop", 2200, 500),
-    Product("Headphones", 160, 150),
-    Product("Coffe Mug", 350, 60),
-    Product("Notepad", 333, 40),
-    Product("Water Bottle", 192, 30),
+    Product("Iphone 6", 0.0000899, 2199.12),
+    Product("Notebook Dell", 0.00350, 2499.90),
+    Product("Tv 42", 0.200, 2999.90),
+    Product("TV 50", 0.290, 3999.90),
+    Product("TV 55", 0.400, 4346.99),
+    Product("Microondas Panasonic", 0.0319, 299.29),
+    Product("Microondas LG", 0.0544, 429.90),
+    Product("Notebook Asus", 0.527, 3999),
+    Product("Microondas Electrolux", 0.0424, 308.66),
+    Product("Notebook Lenovo", 0.498, 1999.90),
+    Product("Geladeira Consul", 0.870, 1199.89),
+    Product("Geladeira Brastemp", 0.635, 849),
+    Product("Geladeira Dako", 0.751, 999.90),
+    Product("Ventilador Panasonic", 0.496, 199.90),
 ]
 
 
@@ -74,7 +83,7 @@ class GenecticAlgorithm:
             k=2,
         )
 
-    def __single_point_crossover(a: Genome, b: Genome) -> Tuple[Genome, Genome]:
+    def __single_point_crossover(self, a: Genome, b: Genome) -> Tuple[Genome, Genome]:
         length = len(a)
 
         if length < 2:
@@ -129,14 +138,31 @@ class GenecticAlgorithm:
 
 def genome_to_things(genome: Genome, products: List[Product]) -> List[Product]:
     result = []
-    for i, thing in enumerate(products):
+    for i, product in enumerate(products):
         if genome[i] == 1:
-            result += [thing.name]
+            result += [product.name]
 
     return result
 
 
-algorithm = GenecticAlgorithm(10, products, 100, 740, 3000)
+def genome_to_values(genome: Genome, products: List[Product]) -> Tuple[float, float]:
+    volume = 0
+    value = 0
+    for i, product in enumerate(products):
+        if genome[i] == 1:
+            volume += product.volume
+            value += product.value
+
+    return volume, value
+
+
+algorithm = GenecticAlgorithm(
+    population_size=10,
+    products=products,
+    generation_limit=100,
+    fitness_limit=24200,
+    volume_limit=3,
+)
 start = time.time()
 population, generations = algorithm.run_evolution()
 end = time.time()
@@ -144,3 +170,6 @@ end = time.time()
 print(f"number of generations: {generations}")
 print(f"time: {end - start}s")
 print(f"best solution: {genome_to_things(population[0], products)}")
+
+total_volume, total_value = genome_to_values(population[0], products)
+print(f"Total Volume: {total_volume}  -  Total Value: {total_value}")
